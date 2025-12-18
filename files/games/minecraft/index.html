@@ -1,0 +1,41 @@
+<body id="g" style="margin:0;width:100vw;height:100vh;background:black;overflow:hidden;position:relative;">
+
+<!-- Overlay -->
+<div id="overlay" style="
+  position:absolute;
+  inset:0;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  font-family:sans-serif;
+  font-size:20px;
+  cursor:pointer;
+  z-index:10;
+  background: rgba(0,0,0,0.3);
+">
+Click to activate controls
+</div>
+
+<script>
+const overlay = document.getElementById('overlay');
+overlay.addEventListener('click', () => {
+    overlay.style.display = 'none'; // hide overlay
+
+    // Instead of loading scripts, load the Eaglercraft 1.12 iframe
+    const iframe = document.createElement('iframe');
+    iframe.src = "https://eaglercraftgame.github.io/go/minecraft-1.5.2/";
+    iframe.style.position = "absolute";
+    iframe.style.top = "0";
+    iframe.style.left = "0";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
+    iframe.allow = "fullscreen; autoplay; clipboard-read; clipboard-write; gamepad; cross-origin-isolated";
+    iframe.allowFullscreen = true;
+
+    document.getElementById('g').appendChild(iframe);
+});
+</script>
+
+</body>

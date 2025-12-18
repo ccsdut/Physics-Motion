@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Rat Games</title>
+  <link rel="icon" href="/media/favicon.png" type="image/png" />
+  <style>
+    :root{
+      --accent: #b36b2d;            /* brown highlight */
+      --search-height: 64px;
+      --search-font-size: 20px;
+      --search-width-desktop: 80%;
+      --search-width-mobile: 95%;
+      --pulse-duration: 1600ms;
+    }
+
+    html,body{height:100%;margin:0;padding:0;}
+    body{
+      font-family: 'Comic Sans MS', sans-serif;
+      background: url('https://4texas4.github.io/media/rat-spinning.gif') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #121212;
+      color:#fff;
+    }
+
+    .container{
+      width:90%;
+      max-width:1100px;
+      margin:32px auto;
+      padding:36px 24px;
+      text-align:center;
+      background:rgba(18,18,18,0.88);
+      border-radius:12px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.6);
+    }
+    h1{margin:0 0 20px 0;font-size:34px;}
+    .search-area{display:flex;flex-direction:column;align-items:center;gap:10px;margin:18px 0 26px;}
+    .search-label{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:var(--accent);text-shadow:0 2px 8px rgba(0,0,0,0.6);}
+    .search-wrapper{position:relative;width:var(--search-width-desktop);max-width:980px;transition:transform .18s ease;}
+    .search-wrapper .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:20px;opacity:.95;}
+    input.search-input{
+      width:100%;
+      height:var(--search-height);
+      padding-left:54px;padding-right:18px;
+      font-size:var(--search-font-size);
+      border-radius:14px;border:2px solid rgba(255,255,255,0.06);
+      background:linear-gradient(180deg, rgba(30,30,30,0.95), rgba(18,18,18,0.85));
+      color:#fff;outline:none;box-shadow:0 6px 20px rgba(0,0,0,0.6);
+      transition:box-shadow .18s ease,transform .12s ease,border-color .12s ease;
+    }
+    input.search-input::placeholder{color:#d0d6db;opacity:.9;font-weight:600;}
+    input.search-input:focus,input.search-input:hover{
+      transform:translateY(-3px);border-color:var(--accent);
+      box-shadow:0 8px 30px rgba(0,0,0,0.7),0 0 28px 3px rgba(179,107,45,0.06);
+    }
+    input.search-input:focus{
+      box-shadow:0 10px 40px rgba(0,0,0,0.7),0 0 40px 8px rgba(179,107,45,0.08);
+    }
+
+    @keyframes pulseGlow{
+      0% { box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 0px rgba(179,107,45,0); }
+      50% { box-shadow: 0 12px 36px rgba(0,0,0,0.65), 0 0 36px rgba(179,107,45,0.12); transform:translateY(-1px); }
+      100% { box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 0px rgba(179,107,45,0); transform:translateY(0); }
+    }
+    .pulse-once{ animation: pulseGlow var(--pulse-duration) ease-in-out 1; }
+
+   .search-hint{font-size:12px;color:#cfd8dc;opacity:.85;}
+    
+/* --- Game Grid Styles (New) --- */
+.game-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); /* Min 200px, 3 per row on wide screens */
+  gap:20px;
+  margin-top:20px;
+}
+.game-card{
+  background:#282828;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 15px rgba(0,0,0,0.5);
+  transition:transform .2s ease, box-shadow .2s ease;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  text-align:left;
+  text-decoration:none;
+  color:inherit;
+}
+.game-card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+}
+.game-image-wrapper{
+  width:100%;
+  /* This creates the square aspect ratio */
+  padding-top:100%; 
+  position:relative;
+  overflow:hidden;
+}
+.game-image-wrapper img{
+  position:absolute;
+  top:0;left:0;
+  width:100%;height:100%;
+  object-fit:cover; /* Crops and zooms the image to cover the square */
+  transition:transform .3s ease;
+}
+.game-card:hover img{
+  transform:scale(1.05);
+}
+.game-info{
+  padding:10px 15px;
+}
+.game-title{
+  font-size:18px;
+  font-weight:700;
+  margin:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* Hide the original button container */
+.button-container{display:none;}
+
+    @media (max-width:900px){ .search-wrapper{width:var(--search-width-mobile);} .game-grid{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));} }
+
+    @media (max-width:420px){ :root{--search-height:56px;--search-font-size:18px;} h1{font-size:28px;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tools</h1>
+
+    <div class="search-area">
+      <div class="search-label" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle>
+        </svg>
+        <span id="label-text">Find a tool</span>
+      </div>
+
+      <div class="search-wrapper" id="search-wrapper">
+        <div class="icon" aria-hidden="true">🔎</div>
+        <input type="search" id="search" class="search-input" aria-label="Search tools" autocomplete="off">
+      </div>
+
+      <div class="search-hint">Tip: press the <kbd>/</kbd> key to jump to search</div>
+    </div>
+
+    <div class="game-grid" id="game-grid"></div>         <div class="button-container" id="game-buttons"></div>
+  </div>
+
+  <script type="module">
+    import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/+esm';
+
+    // Constants
+const NO_IMAGE_URL = 'https://4texas4.github.io/media/noimage.png';
+
+function openViewer(url){
+      const encoded = encodeURIComponent(url);
+      window.location.href = `/viewer.html?site=${encoded}`;
+    }
+
+   /* ========== GAME LIST ==========
+  Structure is now: Name, Image URL, Viewer URL
+*/
+const gameList = `
+Cloud Moon, https://4texas4.github.io/media/toolsimages/cloudmoon.png, https://web.cloudmoonapp.com/
+Website Unbl0ck3rs, https://4texas4.github.io/media/toolsimages/unblocked.png, https://4texas4.github.io/files/tools/unbl0ck3rs.html
+Movies, https://4texas4.github.io/media/toolsimages/movie.png, https://4texas4.github.io/files/tools/movies.html
+Chat, https://4texas4.github.io/media/toolsimages/chat.png, https://ratchatyep.vercel.app/
+AI, https://4texas4.github.io/media/toolsimages/ai.png, https://4texas4.github.io/files/tools/ai
+AI Image Generator, https://4texas4.github.io/media/toolsimages/ai-image-generator.jpg, https://4texas4.github.io/files/tools/ai-image-generator.html
+Music, https://4texas4.github.io/media/toolsimages/music.png, https://4texas4.github.io/files/tools/music.html
+Youtube Unbl0ck3d, https://4texas4.github.io/media/toolsimages/ytunblocked.jpg, https://4texas4.github.io/files/tools/rattube.html
+Soundboard, https://4texas4.github.io/media/toolsimages/soundboard.jpg, https://4texas4.github.io/files/tools/soundboard.html
+Code Editor, https://4texas4.github.io/media/toolsimages/codeeditor.png, https://4texas4.github.io/files/tools/codeeditor.html
+Data URL Maker, https://4texas4.github.io/media/toolsimages/data.png, https://4texas4.github.io/files/tools/base.html
+Ewasion, https://4texas4.github.io/media/toolsimages/ewasion.png, https://4texas4.github.io/files/tools/ewasion.html
+Internet Archive, https://4texas4.github.io/media/toolsimages/internet-archive.png, https://archive.org/
+Clock, https://4texas4.github.io/media/toolsimages/clock.png, https://4texas4.github.io/files/tools/clock.html
+Emulator, https://4texas4.github.io/media/toolsimages/emulator.png, https://4texas4.github.io/files/tools/emu.html
+Random Website, https://4texas4.github.io/media/toolsimages/button.png, https://4texas4.github.io/files/tools/random.html
+`;
+
+    // parse the list robustly - expecting: name, image, url
+const games = gameList
+  .trim()
+  .split('\n')
+  .map(line => {
+    const parts = line.split(',');
+    if (!parts || parts.length < 2) return null;
+    
+    const name = parts.shift().trim();
+    const image = parts.shift().trim() || NO_IMAGE_URL; // Takes the second item (image), uses placeholder if empty
+    const url = parts.join(',').trim(); // Takes the rest as the URL (third item)
+
+    if (!name || !url) return null;
+    
+    return { 
+      name, 
+      url, 
+      image 
+    };
+  })
+  .filter(Boolean);
+
+// Keep the first 15 exactly as-written, sort the rest alphabetically
+const firstEleven = games.slice(0, 15);
+const restSorted = games
+  .slice(15)
+  .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+const finalGames = [...firstEleven, ...restSorted];
+
+// New function to render a single game card
+function createGameCard({name, url, image}) {
+  const card = document.createElement('a');
+  card.href = '#'; // Prevent default navigation
+  card.className = 'game-card';
+  card.onclick = (e) => {
+    e.preventDefault(); // Stop the link from acting as a normal link
+    openViewer(url);
+  };
+
+  card.innerHTML = `
+    <div class="game-image-wrapper">
+      <img src="${image}" alt="${name} cover" onerror="this.src='${NO_IMAGE_URL}'">
+    </div>
+    <div class="game-info">
+      <h3 class="game-title">${name}</h3>
+    </div>
+  `;
+  return card;
+}
+
+    // update placeholder to show count dynamically
+    const searchInput = document.getElementById('search');
+    const sampleHint = 'Movies, AI, Cloudmoon';
+    searchInput.placeholder = `Search through ${finalGames.length} tools (try: ${sampleHint})`;
+
+    // populate grid
+    const gridContainer = document.getElementById('game-grid');
+    const cardMap = new Map();
+    finalGames.forEach((game) => {
+      const card = createGameCard(game);
+      gridContainer.appendChild(card);
+      cardMap.set(game.name, card);
+    });
+
+    // fuzzy search
+    const fuse = new Fuse(finalGames, { keys:['name'], threshold:0.4 });
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.trim();
+      const results = q ? fuse.search(q).map(r => r.item.name) : finalGames.map(g => g.name);
+      const showSet = new Set(results);
+      cardMap.forEach((card, name) => card.style.display = showSet.has(name) ? 'flex' : 'none');
+    });
+
+    // focus shortcut
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement !== searchInput) {
+        e.preventDefault();
+        searchInput.focus();
+        searchInput.select();
+      }
+    });
+
+    // pulse on load
+    const wrapper = document.getElementById('search-wrapper');
+    wrapper.classList.add('pulse-once');
+    setTimeout(()=> wrapper.classList.remove('pulse-once'), 1700);
+
+    // support ?q= prefill
+    const params = new URLSearchParams(location.search);
+    if (params.get('q')) {
+      searchInput.value = params.get('q');
+      searchInput.dispatchEvent(new Event('input'));
+      searchInput.focus();
+    }
+
+    // optional: expose number of games in the visible label too
+    const labelText = document.getElementById('label-text');
+    labelText.textContent = `Find a tool — ${finalGames.length} available`;
+  </script>
+</body>
+</html>
